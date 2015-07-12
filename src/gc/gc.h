@@ -18,7 +18,13 @@ Module Name:
 #ifndef BINDER
 
 #ifdef PROFILING_SUPPORTED
+// TODO: PAL
+// If GC_PROFILING is defined, the gc assumes that ETW layer is included in the build.
+// Even when FEATURE_EVENT_TRACE is not defined. The profiler gc events api is called
+// in the ETW layer.  
+#ifndef FEATURE_PAL
 #define GC_PROFILING       //Turn on profiling
+#endif // FEATURE_PAL
 #endif // PROFILING_SUPPORTED
 
 #endif

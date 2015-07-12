@@ -208,6 +208,7 @@ set(VM_SOURCES_WKS
     profattachclient.cpp
     profattachserver.cpp
     profdetach.cpp
+    profilermetadataemitvalidator.cpp    
     profilingenumerators.cpp
     profilinghelper.cpp
     proftoeeinterfaceimpl.cpp
@@ -283,7 +284,6 @@ list(APPEND VM_SOURCES_WKS
     mngstdinterfaces.cpp
     notifyexternals.cpp
     olecontexthelpers.cpp
-    profilermetadataemitvalidator.cpp
     rcwrefcache.cpp
     rtlfunctions.cpp
     runtimecallablewrapper.cpp

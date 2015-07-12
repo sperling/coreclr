@@ -2719,7 +2719,7 @@ public:
 
 #ifndef DACCESS_COMPILE
 
-    ~CHashTable()
+    virtual ~CHashTable()
     {
         LIMITED_METHOD_CONTRACT;
         if (m_piBuckets != NULL)

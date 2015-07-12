@@ -748,7 +748,9 @@ struct GenerationTable
 #endif
 };
 
-
+// TODO: PAL
+// See gc.h 
+#ifdef FEATURE_EVENT_TRACE
 //---------------------------------------------------------------------------------------
 //
 // This is a callback used by the GC when we call GCHeap::DescrGenerationsToProfiler
@@ -813,6 +815,7 @@ static void GenWalkFunc(void * context,
 
     generationTable->count = count + 1;
 }
+#endif // FEATURE_EVENT_TRACE
 
 // This is the table of generation bounds updated by the gc 
 // and read by the profiler. So this is a single writer,
@@ -849,6 +852,9 @@ void __stdcall UpdateGenerationBounds()
     } CONTRACT_END;
 
 #ifdef PROFILING_SUPPORTED
+// TODO: PAL
+// See gc.h 
+#ifdef FEATURE_EVENT_TRACE
     // Notify the profiler of start of the collection
     if (CORProfilerTrackGC())
     {
@@ -914,6 +920,7 @@ void __stdcall UpdateGenerationBounds()
         }
         FastInterlockDecrement(&s_generationTableLock);
     }
+#endif // FEATURE_EVENT_TRACE
 #endif // PROFILING_SUPPORTED
     RETURN;
 }
@@ -1087,7 +1094,11 @@ BOOL SaveContainedObjectRef(Object * pBO, void * context)
 //      FALSE=stop
 //
 
+// TODO: PAL
+// See gc.h 
+#ifdef FEATURE_EVENT_TRACE
 extern bool s_forcedGCInProgress;
+#endif // FEATURE_EVENT_TRACE
 
 BOOL HeapWalkHelper(Object * pBO, void * pvContext)
 {
@@ -1100,6 +1111,9 @@ BOOL HeapWalkHelper(Object * pBO, void * pvContext)
     }
     CONTRACTL_END;
 
+// TODO: PAL
+// See gc.h 
+#ifdef FEATURE_EVENT_TRACE
     OBJECTREF *   arrObjRef      = NULL;
     size_t        cNumRefs       = 0;
     bool          bOnStack       = false;
@@ -1188,6 +1202,9 @@ BOOL HeapWalkHelper(Object * pBO, void * pvContext)
     // extremely rare that a profapi profiler is monitoring heap dumps AND an ETW
     // profiler is also monitoring heap dumps.
     return (pProfilerWalkHeapContext->fProfilerPinned) ? SUCCEEDED(hr) : TRUE;
+#else
+    return FALSE;
+#endif // FEATURE_EVENT_TRACE
 }
 
 //---------------------------------------------------------------------------------------
@@ -1257,6 +1274,9 @@ void ScanRootsHelper(Object** ppObject, ScanContext *pSC, DWORD dwFlags)
     }
     CONTRACTL_END;
 
+// TODO: PAL
+// See gc.h 
+#ifdef FEATURE_EVENT_TRACE
     // RootReference2 can return E_OUTOFMEMORY, and we're swallowing that.
     // Furthermore, we can't really handle it because we're callable during GC promotion.
     // On the other hand, this only means profiling information will be incomplete,
@@ -1309,6 +1329,7 @@ void ScanRootsHelper(Object** ppObject, ScanContext *pSC, DWORD dwFlags)
             dwFlags,        // dwGCFlags
             dwEtwRootFlags);
     }
+#endif // FEATURE_EVENT_TRACE
 }
 
 
@@ -4745,6 +4766,9 @@ HRESULT ProfToEEInterfaceImpl::ForceGC()
     }
     CONTRACTL_END;
 
+// TODO: PAL
+// See gc.h 
+#ifdef FEATURE_EVENT_TRACE
     ASSERT_NO_EE_LOCKS_HELD();
 
     // We need to use IsGarbageCollectorFullyInitialized() instead of IsGCHeapInitialized() because
@@ -4803,6 +4827,9 @@ HRESULT ProfToEEInterfaceImpl::ForceGC()
     }
 
     return hr;
+#else
+    return CORPROF_E_NOT_YET_AVAILABLE;
+#endif // FEATURE_EVENT_TRACE
 }
 
 
@@ -6795,6 +6822,8 @@ StackWalkAction ProfilerStackWalkCallback(CrawlFrame *pCf, PROFILER_STACK_WALK_D
     return SWA_ABORT;
 }
 
+#ifdef _TARGET_X86_
+
 //---------------------------------------------------------------------------------------
 // Normally, calling GetFunction() on the frame is sufficient to ensure
 // HelperMethodFrames are intialized. However, sometimes we need to be able to specify
@@ -6855,8 +6884,6 @@ static BOOL EnsureFrameInitialized(Frame * pFrame)
     return FALSE;
 }
 
-
-#ifdef _TARGET_X86_
 //---------------------------------------------------------------------------------------
 //
 // Implements the COR_PRF_SNAPSHOT_X86_OPTIMIZED algorithm called by DoStackSnapshot. 

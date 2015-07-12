@@ -400,7 +400,9 @@ void ProfilingAPIUtility::LogProfEventVA(
 
     messageToLog.VPrintf(messageFromResource, insertionArgs);
 
+#ifndef FEATURE_PAL
     AppendSupplementaryInformation(iStringResourceID, &messageToLog);
+#endif // !FEATURE_PAL 
 
 #if defined(FEATURE_CORECLR)
     // CoreCLR on Windows ouputs debug strings for diagnostic messages.

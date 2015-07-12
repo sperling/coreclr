@@ -17,6 +17,15 @@
 #ifndef __PROFILINGENUMERATORS_H__
 #define __PROFILINGENUMERATORS_H__
 
+#ifndef PLATFORM_UNIX
+#define PROFILER_ENUM_TEMPLATE template< typename EnumInterface, typename Element, const IID* pEnumInterfaceIID >
+#define PROFILER_ENUM_CLASS ProfilerEnum< EnumInterface, Element, pEnumInterfaceIID >
+#define PROFILER_ENUM_IID_VAR 
+#else
+#define PROFILER_ENUM_TEMPLATE template< typename EnumInterface, typename Element >
+#define PROFILER_ENUM_CLASS ProfilerEnum< EnumInterface, Element >
+#define PROFILER_ENUM_IID_VAR const IID* pEnumInterfaceIID = &__uuidof(EnumInterface);
+#endif // !PLATFORM_UNIX
 
 //---------------------------------------------------------------------------------------
 //
@@ -33,13 +42,17 @@
 //          (you probably don't need to use this)
 //
 //
+#ifndef PLATFORM_UNIX
 template< typename EnumInterface, typename Element, const IID* pEnumInterfaceIID = &__uuidof(EnumInterface) >
+#else
+template< typename EnumInterface, typename Element >
+#endif // !PLATFORM_UNIX
 class ProfilerEnum : public EnumInterface
 {
 public:
     ProfilerEnum(CDynArray< Element >* elements);
     ProfilerEnum();
-    ~ProfilerEnum();
+    virtual ~ProfilerEnum();
 
     // IUnknown functions
 
@@ -98,8 +111,8 @@ protected:
 // </TODO>
 //
 //
-template< typename EnumInterface, typename Element, const IID* pEnumInterfaceIID >
-ProfilerEnum< EnumInterface, Element, pEnumInterfaceIID >::ProfilerEnum(CDynArray< Element >* elements) :
+PROFILER_ENUM_TEMPLATE
+PROFILER_ENUM_CLASS::ProfilerEnum(CDynArray< Element >* elements) :
     m_currentElement(0),
     m_refCount(1)
 {
@@ -120,8 +133,8 @@ ProfilerEnum< EnumInterface, Element, pEnumInterfaceIID >::ProfilerEnum(CDynArra
     }
 }
 
-template< typename EnumInterface, typename Element, const IID* pEnumInterfaceIID >
-ProfilerEnum< EnumInterface, Element, pEnumInterfaceIID >::ProfilerEnum() :
+PROFILER_ENUM_TEMPLATE
+PROFILER_ENUM_CLASS::ProfilerEnum() :
     m_currentElement(0),
     m_refCount(1)
 {
@@ -140,8 +153,8 @@ ProfilerEnum< EnumInterface, Element, pEnumInterfaceIID >::ProfilerEnum() :
 // Returns
 //      None
 //
-template< typename EnumInterface, typename Element, const IID* pEnumInterfaceIID >
-ProfilerEnum< EnumInterface, Element, pEnumInterfaceIID >::~ProfilerEnum()
+PROFILER_ENUM_TEMPLATE
+PROFILER_ENUM_CLASS::~ProfilerEnum()
 {
 }
 
@@ -160,10 +173,11 @@ ProfilerEnum< EnumInterface, Element, pEnumInterfaceIID >::~ProfilerEnum()
 //      E_NOINTERFACE   -- if the enumerator does not implement the requested interface
 //
 
-template< typename EnumInterface, typename Element, const IID* pEnumInterfaceIID >
+PROFILER_ENUM_TEMPLATE
 HRESULT
-ProfilerEnum< EnumInterface, Element, pEnumInterfaceIID >::QueryInterface(REFIID id, void** pInterface)
+PROFILER_ENUM_CLASS::QueryInterface(REFIID id, void** pInterface)
 {
+    PROFILER_ENUM_IID_VAR
     if (*pEnumInterfaceIID == id)
     {
         *pInterface = static_cast< EnumInterface* >(this);
@@ -182,16 +196,16 @@ ProfilerEnum< EnumInterface, Element, pEnumInterfaceIID >::QueryInterface(REFIID
     return S_OK;
 }
 
-template< typename EnumInterface, typename Element, const IID* pEnumInterfaceIID >
+PROFILER_ENUM_TEMPLATE
 ULONG
-ProfilerEnum< EnumInterface, Element, pEnumInterfaceIID >::AddRef()
+PROFILER_ENUM_CLASS::AddRef()
 {
     return InterlockedIncrement(&m_refCount);
 }
 
-template< typename EnumInterface, typename Element, const IID* pEnumInterfaceIID >
+PROFILER_ENUM_TEMPLATE
 ULONG
-ProfilerEnum< EnumInterface, Element, pEnumInterfaceIID >::Release()
+PROFILER_ENUM_CLASS::Release()
 {
     ULONG refCount = InterlockedDecrement(&m_refCount);
 
@@ -225,9 +239,9 @@ ProfilerEnum< EnumInterface, Element, pEnumInterfaceIID >::Release()
 //    try to advance 1 item and return S_OK if it is successful
 //
 
-template< typename EnumInterface, typename Element, const IID* pEnumInterfaceIID >
+PROFILER_ENUM_TEMPLATE
 HRESULT
-ProfilerEnum< EnumInterface, Element, pEnumInterfaceIID >::Next(ULONG elementsRequested,
+PROFILER_ENUM_CLASS::Next(ULONG elementsRequested,
                                                                 Element elements[],
                                                                 ULONG* elementsFetched)
 {
@@ -307,9 +321,9 @@ ProfilerEnum< EnumInterface, Element, pEnumInterfaceIID >::Next(ULONG elementsRe
 //
 //
 
-template< typename EnumInterface, typename Element, const IID* pEnumInterfaceIID >
+PROFILER_ENUM_TEMPLATE
 HRESULT
-ProfilerEnum< EnumInterface, Element, pEnumInterfaceIID >::GetCount(ULONG* count)
+PROFILER_ENUM_CLASS::GetCount(ULONG* count)
 {
     CONTRACTL
     {
@@ -352,9 +366,9 @@ ProfilerEnum< EnumInterface, Element, pEnumInterfaceIID >::GetCount(ULONG* count
 // before and after calling Skip()
 //
 //
-template< typename EnumInterface, typename Element, const IID* pEnumInterfaceIID >
+PROFILER_ENUM_TEMPLATE
 HRESULT
-ProfilerEnum< EnumInterface, Element, pEnumInterfaceIID >::Skip(ULONG count)
+PROFILER_ENUM_CLASS::Skip(ULONG count)
 {
     CONTRACTL
     {
@@ -392,9 +406,9 @@ ProfilerEnum< EnumInterface, Element, pEnumInterfaceIID >::Skip(ULONG count)
 //
 //
 
-template< typename EnumInterface, typename Element, const IID* pEnumInterfaceIID >
+PROFILER_ENUM_TEMPLATE
 HRESULT
-ProfilerEnum< EnumInterface, Element, pEnumInterfaceIID >::Reset()
+PROFILER_ENUM_CLASS::Reset()
 {
     CONTRACTL
     {
@@ -424,9 +438,9 @@ ProfilerEnum< EnumInterface, Element, pEnumInterfaceIID >::Reset()
 //   E_INVALIDARG   -- if pInterface is an invalid pointer
 //
 
-template< typename EnumInterface, typename Element, const IID* pEnumInterfaceIID >
+PROFILER_ENUM_TEMPLATE
 HRESULT
-ProfilerEnum< EnumInterface, Element, pEnumInterfaceIID >::Clone(EnumInterface** pInterface)
+PROFILER_ENUM_CLASS::Clone(EnumInterface** pInterface)
 {
     CONTRACTL
     {
@@ -446,7 +460,7 @@ ProfilerEnum< EnumInterface, Element, pEnumInterfaceIID >::Clone(EnumInterface**
     HRESULT hr = S_OK;
     EX_TRY
     {
-        *pInterface = new ProfilerEnum< EnumInterface, Element, pEnumInterfaceIID >(&m_elements);
+        *pInterface = new PROFILER_ENUM_CLASS(&m_elements);
     }
     EX_CATCH
     {
@@ -457,6 +471,10 @@ ProfilerEnum< EnumInterface, Element, pEnumInterfaceIID >::Clone(EnumInterface**
 
         return hr;
 }
+
+#undef PROFILER_ENUM_TEMPLATE
+#undef PROFILER_ENUM_CLASS
+#undef PROFILER_ENUM_IID_VAR
 
 // ---------------------------------------------------------------------------------------
 // Enumerators have their base class defined here, as an instantiation of ProfilerEnum
