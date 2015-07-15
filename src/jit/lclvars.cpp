@@ -3122,7 +3122,7 @@ void Compiler::lvaAllocOutgoingArgSpace()
         lvaTable[lvaOutgoingArgSpaceVar].lvRefCnt     = 1;
         lvaTable[lvaOutgoingArgSpaceVar].lvRefCntWtd  = BB_UNITY_WEIGHT;
 
-#if defined(PROFILING_SUPPORTED) && defined(_TARGET_AMD64_) && !defined(UNIX_AMD64_ABI) // No 4 slots for outgoing params on System V.
+#if defined(PROFILING_SUPPORTED) && defined(_TARGET_AMD64_)
         // If we are generating profiling Enter/Leave/TailCall hooks, make sure
         // that outgoing arg space size is minimum 4 slots.  This will ensure
         // that even methods without any calls will have 4-slot outgoing arg area.
@@ -3130,7 +3130,7 @@ void Compiler::lvaAllocOutgoingArgSpace()
         {
             lvaOutgoingArgSpaceSize = 4 * REGSIZE_BYTES;            
         }
-#endif // PROFILING_SUPPORTED && _TARGET_AMD64_ && !UNIX_AMD64_ABI
+#endif // PROFILING_SUPPORTED && _TARGET_AMD64_
     }
 
     noway_assert(lvaOutgoingArgSpaceVar >= info.compLocalsCount &&

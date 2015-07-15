@@ -6636,7 +6636,7 @@ void CodeGen::genProfilingEnterCallback(regNumber  initReg,
         return;
 
 #ifndef LEGACY_BACKEND
-#if defined(_TARGET_AMD64_) && !defined(UNIX_AMD64_ABI) // No profiling for System V systems yet.
+#if defined(_TARGET_AMD64_)
     unsigned        varNum;
     LclVarDsc*      varDsc;
 
@@ -6845,7 +6845,7 @@ void                CodeGen::genProfilingLeaveCallback(unsigned helper /*= CORIN
 
 #ifndef LEGACY_BACKEND
 
-#if defined(_TARGET_AMD64_) && !defined(UNIX_AMD64_ABI) // No profiling for System V systems yet.
+#if defined(_TARGET_AMD64_)
     // Since the method needs to make a profiler callback, it should have out-going arg space allocated.
     noway_assert(compiler->lvaOutgoingArgSpaceVar != BAD_VAR_NUM);
     noway_assert(compiler->lvaOutgoingArgSpaceSize >= (4 * REGSIZE_BYTES));
