@@ -513,7 +513,9 @@ void GCProfileWalkHeapWorker(BOOL fProfilerPinned, BOOL fShouldWalkHeapRootsForE
         // should be flushed into the ETW stream
         if (fShouldWalkHeapObjectsForEtw || fShouldWalkHeapRootsForEtw)
         {
+#ifdef FEATURE_EVENT_TRACE
             ETW::GCLog::EndHeapDump(&profilerWalkHeapContext);
+#endif // FEATURE_EVENT_TRACE
         }
     }
 }

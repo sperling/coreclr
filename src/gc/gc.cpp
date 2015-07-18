@@ -20711,12 +20711,14 @@ void gc_heap::walk_relocation_loh (size_t profiling_context)
             STRESS_LOG_PLUG_MOVE(o, (o + size), -reloc);
 
             {
+#ifdef FEATURE_EVENT_TRACE
                 ETW::GCLog::MovedReference(
                                     o,
                                    (o + size),
                                    reloc,
                                    profiling_context,
                                    settings.compaction);
+#endif // FEATURE_EVENT_TRACE
             }
 
             o = o + size;
@@ -30206,7 +30208,9 @@ void gc_heap::record_survived_for_profiler(int condemned_gen_number, BYTE * star
 {
     size_t profiling_context = 0;
 
+#ifdef FEATURE_EVENT_TRACE
     ETW::GCLog::BeginMovedReferences(&profiling_context);
+#endif // FEATURE_EVENT_TRACE
 
     // Now walk the portion of memory that is actually being relocated.
     walk_relocation(condemned_gen_number, start_address, profiling_context);
@@ -30221,14 +30225,18 @@ void gc_heap::record_survived_for_profiler(int condemned_gen_number, BYTE * star
     // Notify the EE-side profiling code that all the references have been traced for
     // this heap, and that it needs to flush all cached data it hasn't sent to the
     // profiler and release resources it no longer needs.
+#ifdef FEATURE_EVENT_TRACE
     ETW::GCLog::EndMovedReferences(profiling_context);
+#endif // FEATURE_EVENT_TRACE
 }
 
 void gc_heap::notify_profiler_of_surviving_large_objects ()
 {
     size_t profiling_context = 0;
 
+#ifdef FEATURE_EVENT_TRACE
     ETW::GCLog::BeginMovedReferences(&profiling_context);
+#endif // FEATURE_EVENT_TRACE
 
     generation* gen        = large_object_generation;
     heap_segment* seg      = heap_segment_rw (generation_start_segment (gen));;
@@ -30273,12 +30281,14 @@ void gc_heap::notify_profiler_of_surviving_large_objects ()
 
             plug_end = o;
 
+#ifdef FEATURE_EVENT_TRACE
             ETW::GCLog::MovedReference(
                 plug_start,
                 plug_end,
                 0,
                 profiling_context,
                 FALSE);
+#endif // FEATURE_EVENT_TRACE
         }
         else
         {
@@ -30288,7 +30298,9 @@ void gc_heap::notify_profiler_of_surviving_large_objects ()
             }
         }
     }
+#ifdef FEATURE_EVENT_TRACE
     ETW::GCLog::EndMovedReferences(profiling_context);
+#endif // FEATURE_EVENT_TRACE
 }
 #endif // defined(GC_PROFILING) || defined(FEATURE_EVENT_TRACE)
 
@@ -31556,7 +31568,7 @@ void gc_heap::descr_generations_to_profiler (gen_walk_fn fn, void *context)
                 assert (seg == hp->ephemeral_heap_segment);
                 assert (curr_gen_number0 <= max_generation);
                 //
-                if ((curr_gen_number0 == max_generation))
+                if (curr_gen_number0 == max_generation)
                 {
                     if (heap_segment_mem (seg) < generation_allocation_start (hp->generation_of (max_generation-1)))
                     {

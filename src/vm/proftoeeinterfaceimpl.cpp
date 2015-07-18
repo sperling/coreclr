@@ -748,9 +748,6 @@ struct GenerationTable
 #endif
 };
 
-// TODO: PAL
-// See gc.h 
-#ifdef FEATURE_EVENT_TRACE
 //---------------------------------------------------------------------------------------
 //
 // This is a callback used by the GC when we call GCHeap::DescrGenerationsToProfiler
@@ -815,7 +812,6 @@ static void GenWalkFunc(void * context,
 
     generationTable->count = count + 1;
 }
-#endif // FEATURE_EVENT_TRACE
 
 // This is the table of generation bounds updated by the gc 
 // and read by the profiler. So this is a single writer,
@@ -852,9 +848,6 @@ void __stdcall UpdateGenerationBounds()
     } CONTRACT_END;
 
 #ifdef PROFILING_SUPPORTED
-// TODO: PAL
-// See gc.h 
-#ifdef FEATURE_EVENT_TRACE
     // Notify the profiler of start of the collection
     if (CORProfilerTrackGC())
     {
@@ -920,7 +913,6 @@ void __stdcall UpdateGenerationBounds()
         }
         FastInterlockDecrement(&s_generationTableLock);
     }
-#endif // FEATURE_EVENT_TRACE
 #endif // PROFILING_SUPPORTED
     RETURN;
 }
@@ -1094,8 +1086,6 @@ BOOL SaveContainedObjectRef(Object * pBO, void * context)
 //      FALSE=stop
 //
 
-// TODO: PAL
-// See gc.h 
 #ifdef FEATURE_EVENT_TRACE
 extern bool s_forcedGCInProgress;
 #endif // FEATURE_EVENT_TRACE
@@ -1111,9 +1101,6 @@ BOOL HeapWalkHelper(Object * pBO, void * pvContext)
     }
     CONTRACTL_END;
 
-// TODO: PAL
-// See gc.h 
-#ifdef FEATURE_EVENT_TRACE
     OBJECTREF *   arrObjRef      = NULL;
     size_t        cNumRefs       = 0;
     bool          bOnStack       = false;
@@ -1166,7 +1153,7 @@ BOOL HeapWalkHelper(Object * pBO, void * pvContext)
             (ULONG) cNumRefs, 
             (ObjectID *) arrObjRef);
     }
-
+#ifdef FEATURE_EVENT_TRACE
     if (s_forcedGCInProgress &&
         ETW_TRACING_CATEGORY_ENABLED(MICROSOFT_WINDOWS_DOTNETRUNTIME_PROVIDER_Context, 
                                      TRACE_LEVEL_INFORMATION, 
@@ -1180,7 +1167,7 @@ BOOL HeapWalkHelper(Object * pBO, void * pvContext)
             (Object **) arrObjRef);
 
     }
-
+#endif // FEATURE_EVENT_TRACE
     // If the data was not allocated on the stack, need to clean it up.
     if ((arrObjRef != NULL) && !bOnStack)
     {
@@ -1202,9 +1189,6 @@ BOOL HeapWalkHelper(Object * pBO, void * pvContext)
     // extremely rare that a profapi profiler is monitoring heap dumps AND an ETW
     // profiler is also monitoring heap dumps.
     return (pProfilerWalkHeapContext->fProfilerPinned) ? SUCCEEDED(hr) : TRUE;
-#else
-    return FALSE;
-#endif // FEATURE_EVENT_TRACE
 }
 
 //---------------------------------------------------------------------------------------
@@ -1274,9 +1258,6 @@ void ScanRootsHelper(Object** ppObject, ScanContext *pSC, DWORD dwFlags)
     }
     CONTRACTL_END;
 
-// TODO: PAL
-// See gc.h 
-#ifdef FEATURE_EVENT_TRACE
     // RootReference2 can return E_OUTOFMEMORY, and we're swallowing that.
     // Furthermore, we can't really handle it because we're callable during GC promotion.
     // On the other hand, this only means profiling information will be incomplete,
@@ -1314,6 +1295,7 @@ void ScanRootsHelper(Object** ppObject, ScanContext *pSC, DWORD dwFlags)
             RootReference2((BYTE *)*ppObject, pPSC->dwEtwRootKind, (EtwGCRootFlags)dwEtwRootFlags, (BYTE *)rootID, &((pPSC)->pHeapId));
     }
 
+#ifdef FEATURE_EVENT_TRACE
     // Notify ETW of the root
     if (s_forcedGCInProgress &&
         ETW_TRACING_CATEGORY_ENABLED(MICROSOFT_WINDOWS_DOTNETRUNTIME_PROVIDER_Context, 
@@ -4766,9 +4748,6 @@ HRESULT ProfToEEInterfaceImpl::ForceGC()
     }
     CONTRACTL_END;
 
-// TODO: PAL
-// See gc.h 
-#ifdef FEATURE_EVENT_TRACE
     ASSERT_NO_EE_LOCKS_HELD();
 
     // We need to use IsGarbageCollectorFullyInitialized() instead of IsGCHeapInitialized() because
@@ -4812,11 +4791,14 @@ HRESULT ProfToEEInterfaceImpl::ForceGC()
         LL_INFO1000, 
         "**PROF: ForceGC.\n"));        
 
+#ifdef FEATURE_EVENT_TRACE
     // This helper, used by ETW and profAPI ensures a managed thread gets created for
     // this thread before forcing the GC (to work around Jupiter issues where it's
     // expected this thread is already managed before starting the GC).
     HRESULT hr = ETW::GCLog::ForceGCForDiagnostics();
-
+#else
+    HRESULT hr = E_FAIL;
+#endif // FEATURE_EVENT_TRACE
     // If a Thread object was just created for this thread, remember the fact that it
     // was a ForceGC() thread, so we can be more lenient when doing
     // COR_PRF_CALLBACKSTATE_INCALLBACK later on from other APIs
@@ -4827,9 +4809,6 @@ HRESULT ProfToEEInterfaceImpl::ForceGC()
     }
 
     return hr;
-#else
-    return CORPROF_E_NOT_YET_AVAILABLE;
-#endif // FEATURE_EVENT_TRACE
 }
 
 
