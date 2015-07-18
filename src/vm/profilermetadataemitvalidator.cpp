@@ -37,7 +37,7 @@ m_cRefCount(0)
 
 ProfilerMetadataEmitValidator::~ProfilerMetadataEmitValidator()
 {
-    
+    LIMITED_METHOD_CONTRACT;
 }
 
   //IUnknown

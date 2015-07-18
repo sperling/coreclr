@@ -6642,8 +6642,9 @@ void CodeGen::genProfilingEnterCallback(regNumber  initReg,
 
     // Since the method needs to make a profiler callback, it should have out-going arg space allocated.
     noway_assert(compiler->lvaOutgoingArgSpaceVar != BAD_VAR_NUM);
+#if !defined(UNIX_AMD64_ABI) 
     noway_assert(compiler->lvaOutgoingArgSpaceSize >= (4 * REGSIZE_BYTES));
-
+#endif
     // Home all arguments passed in arg registers (RCX, RDX, R8 and R9).
     // In case of vararg methods, arg regs are already homed.
     //
@@ -6848,8 +6849,9 @@ void                CodeGen::genProfilingLeaveCallback(unsigned helper /*= CORIN
 #if defined(_TARGET_AMD64_)
     // Since the method needs to make a profiler callback, it should have out-going arg space allocated.
     noway_assert(compiler->lvaOutgoingArgSpaceVar != BAD_VAR_NUM);
+#if !defined(UNIX_AMD64_ABI)
     noway_assert(compiler->lvaOutgoingArgSpaceSize >= (4 * REGSIZE_BYTES));
-
+#endif
     // If thisPtr needs to be kept alive and reported, it cannot be one of the callee trash
     // registers that profiler callback kills.
     if (compiler->lvaKeepAliveAndReportThis() && compiler->lvaTable[compiler->info.compThisArg].lvIsInReg())
