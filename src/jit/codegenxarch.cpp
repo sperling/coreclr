@@ -1793,7 +1793,7 @@ CodeGen::genReturn(GenTreePtr treeNode)
     }
 
 #ifdef PROFILING_SUPPORTED
-    // !! Note !!
+    // !! Note !! FIXA
     // TODO-AMD64-Unix: If the profiler hook is implemented on *nix, make sure for 2 register returned structs
     //                  the RAX and RDX needs to be kept alive. Make the necessary changes in lowerxarch.cpp
     //                  in the handling of the GT_RETURN statement.

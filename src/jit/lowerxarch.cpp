@@ -323,6 +323,12 @@ void Lowering::TreeNodeInfoInit(GenTree* stmt)
 #ifdef FEATURE_UNIX_AMD64_STRUCT_PASSING
                 if (varTypeIsStruct(tree))
                 {                    
+                    // FIXA:
+                    // TODO-AMD64-Unix: If the profiler hook is implemented on *nix, make sure for 2 register returned structs
+    //                  the RAX and RDX needs to be kept alive. Make the necessary changes in lowerxarch.cpp
+    //                  in the handling of the GT_RETURN statement.
+    //                  Such structs containing GC pointers need to be handled by calling gcInfo.gcMarkRegSetNpt
+    //                  for the return registers containing GC refs.
                     // op1 has to be either an lclvar or a multi-reg returning call
                     if (op1->OperGet() == GT_LCL_VAR)
                     {

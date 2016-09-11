@@ -333,3 +333,8 @@ NullObject:
         jmp     C_FUNC(JIT_InternalThrow)
                                                                                       
 LEAF_END SinglecastDelegateInvokeStub, _TEXT
+
+// void JIT_ProfilerEnterLeaveTailcallStub(UINT_PTR ProfilerHandle)
+LEAF_ENTRY JIT_ProfilerEnterLeaveTailcallStub, _TEXT
+        REPRET
+LEAF_END JIT_ProfilerEnterLeaveTailcallStub, _TEXT

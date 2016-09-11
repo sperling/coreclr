@@ -4355,7 +4355,11 @@ int Compiler::lvaAssignVirtualFrameOffsetToArg(unsigned lclNum, unsigned argSize
         // Argument is passed in a register, don't count it
         // when updating the current offset on the stack.
 
-        if (varDsc->lvOnFrame)
+        if (varDsc->lvOnFrame
+#if defined(PROFILING_SUPPORTED)
+            || compIsProfilerHookNeeded()
+#endif // PROFILING_SUPPORTED
+           )
         {
             // The offset for args needs to be set only for the stack homed arguments for System V.
             varDsc->lvStkOffs = argOffs;
@@ -4364,6 +4368,20 @@ int Compiler::lvaAssignVirtualFrameOffsetToArg(unsigned lclNum, unsigned argSize
         {
             varDsc->lvStkOffs = 0;
         }
+
+#if defined(PROFILING_SUPPORTED)
+        if (compIsProfilerHookNeeded())
+        {
+            if (argSize > TARGET_POINTER_SIZE)
+            {
+                argOffs += (int)roundUp(argSize, TARGET_POINTER_SIZE);
+            }
+            else
+            {
+                argOffs += TARGET_POINTER_SIZE;
+            }
+        }
+#endif // PROFILING_SUPPORTED
     }
     else
     {
@@ -5051,7 +5069,14 @@ void Compiler::lvaAssignVirtualFrameOffsetsToLocals()
             }
 #endif
 
-            bool allocateOnFrame = varDsc->lvOnFrame;
+            bool allocateOnFrame = varDsc->lvOnFrame
+            // FIXA:    ta bort _TARGET_AMD64_
+            //          istället (varDsc->lvIsRegArg && compIsProfilerHookNeeded())
+            //          är detta verkligen rätt ställe?
+#if defined(PROFILING_SUPPORTED) && defined(_TARGET_AMD64_) && defined(UNIX_AMD64_ABI)
+                 || compIsProfilerHookNeeded()
+#endif // defined(PROFILING_SUPPORTED) && defined(_TARGET_AMD64_) && defined(UNIX_AMD64_ABI)    
+                 ;
 
             if (varDsc->lvRegister &&
                 (lvaDoneFrameLayout == REGALLOC_FRAME_LAYOUT) && 

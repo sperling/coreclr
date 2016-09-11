@@ -7114,13 +7114,15 @@ void CodeGen::genProfilingEnterCallback(regNumber  initReg,
         return;
 
 #ifndef LEGACY_BACKEND
-#if defined(_TARGET_AMD64_) && !defined(UNIX_AMD64_ABI) // No profiling for System V systems yet.
+#if defined(_TARGET_AMD64_)
     unsigned        varNum;
     LclVarDsc*      varDsc;
 
+#if !defined(UNIX_AMD64_ABI)
     // Since the method needs to make a profiler callback, it should have out-going arg space allocated.
     noway_assert(compiler->lvaOutgoingArgSpaceVar != BAD_VAR_NUM);
     noway_assert(compiler->lvaOutgoingArgSpaceSize >= (4 * REGSIZE_BYTES));
+#endif // !defined(UNIX_AMD64_ABI)
 
     // Home all arguments passed in arg registers (RCX, RDX, R8 and R9).
     // In case of vararg methods, arg regs are already homed.
@@ -7325,10 +7327,12 @@ void                CodeGen::genProfilingLeaveCallback(unsigned helper /*= CORIN
 
 #ifndef LEGACY_BACKEND
 
-#if defined(_TARGET_AMD64_) && !defined(UNIX_AMD64_ABI) // No profiling for System V systems yet.
+#if defined(_TARGET_AMD64_)
+#if !defined(UNIX_AMD64_ABI)
     // Since the method needs to make a profiler callback, it should have out-going arg space allocated.
     noway_assert(compiler->lvaOutgoingArgSpaceVar != BAD_VAR_NUM);
     noway_assert(compiler->lvaOutgoingArgSpaceSize >= (4 * REGSIZE_BYTES));
+#endif // !defined(UNIX_AMD64_ABI)
 
     // If thisPtr needs to be kept alive and reported, it cannot be one of the callee trash
     // registers that profiler callback kills.
